@@ -21,4 +21,9 @@ public class FileUtils {
         Root familyTreeData = mapper.readValue(new File("src/main/resources/" + fileName), Root.class);
         return familyTreeData;
     }
+
+    public static void writeRandomFile(Root root, String fileName) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(new File("src/main/resources/" + fileName), root);
+    }
 }

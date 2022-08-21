@@ -3,6 +3,7 @@ package com.linejae.familytree.controllers;
 import com.gcache.graph.GraphUtil;
 import com.gcache.graph.model.Node;
 import com.linejae.familytree.Utils.FileUtils;
+import com.linejae.familytree.Utils.MockDataGeneratorUtil;
 import com.linejae.familytree.models.Member;
 import com.linejae.familytree.models.Root;
 import com.linejae.familytree.services.CacheManagerService;
@@ -55,6 +56,15 @@ public class DataLoaderController {
         }
         return lineageData;
 
+    }
+
+    @GetMapping("/generateMockData")
+    public void generateMockData() {
+        try {
+            MockDataGeneratorUtil.generateMockData();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //this method will add all the nodes to a JGrapht directed graph
