@@ -3,7 +3,6 @@ package com.linejae.familytree.controllers;
 import com.gcache.graph.GraphUtil;
 import com.gcache.graph.model.Node;
 import com.linejae.familytree.models.Member;
-import com.linejae.familytree.models.Root;
 import com.linejae.familytree.services.CacheManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +13,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+/**
+ * This controller exposes all the computation methods
+ */
 @RestController
 public class FamilyTreeEvaluationController {
 

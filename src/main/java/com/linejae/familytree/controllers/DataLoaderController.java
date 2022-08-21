@@ -8,6 +8,7 @@ import com.linejae.familytree.models.Root;
 import com.linejae.familytree.services.CacheManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -24,31 +25,40 @@ public class DataLoaderController {
     @Autowired
     private CacheManagerService cacheManagerService;
 
-    @GetMapping("/familyTree/loadData")
-    public Root loadFamilyTreeData() throws Exception {
+    /**
+     *
+     * @param fileName File from which to load the data
+     * @return The Root object containing the hierarchy
+     * @throws Exception
+     */
+    @GetMapping("/familyTree/loadData/{fileName}")
+    public Root loadFamilyTreeData(@@PathVariable String fileName) throws Exception {
         FileUtils fUtils = new FileUtils();
-        Root lineageData = fUtils.loadJsonFile();
+        Root lineageData = fUtils.loadJsonFile(fileName);
 
         //caching all relationships in the graph cache
         if(lineageData.getLineage() != null) {
             Node startingNode = new Node(lineageData.getLineage().getFamilyTree(), lineageData.getLineage().getFamilyTree());
-            List<String> rootchildrenList = new ArrayList<>();
 
+            //add the root to the graph first then send its children for addition
+            //recursively
             for(Member rootchildren: lineageData.getLineage().getMembers()) {
                 Node rootchild = new Node(rootchildren.toString(), rootchildren);
                 cacheManagerService.getGraph().addRelationship(startingNode, rootchild);
             }
             cacheManagerService.setRootNode(startingNode);
+            //Add the depth for the tree even as we construct it
             cacheManagerService.setDepth(cacheManagerService.getDepth() + 1);
+            //send the children to be added to the graph recursively
             cacheChildren(lineageData.getLineage().getMembers(), cacheManagerService.getGraph(), startingNode);
 
         }
-        //cacheManagerService.getGraph().printGraph(GraphUtil.PrintOrder.DF, cacheManagerService.getGraph().getCurrentGraphInstance());
         return lineageData;
 
     }
 
-    public void cacheChildren(ArrayList<Member> members, GraphUtil graphUtil, Node parent) {
+    //this method will add all the nodes to a JGrapht directed graph
+    private void cacheChildren(ArrayList<Member> members, GraphUtil graphUtil, Node parent) {
          if(members == null) {
              return;
          }
@@ -66,7 +76,6 @@ public class DataLoaderController {
                 Node leafNode = new Node(memberObject.toString(), memberObject, parent);
                 graphUtil.addRelationship(leafNode, null);
                 cacheManagerService.getLeafNodes().add(leafNode);
-                //return;
             }
         }));
     }

@@ -7,9 +7,9 @@ import java.io.File;
 
 public class FileUtils {
 
-    public Root loadJsonFile() throws Exception {
+    public Root loadJsonFile(String fileName) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        Root familyTreeData = mapper.readValue(new File("src/main/resources/familytree1.json"), Root.class);
+        Root familyTreeData = mapper.readValue(new File("src/main/resources/" + fileName), Root.class);
         return familyTreeData;
     }
 }
