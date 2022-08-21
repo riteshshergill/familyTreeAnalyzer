@@ -23,6 +23,10 @@ public class CacheManagerService {
 
     private Integer shortestDepth = 0;
 
+    private Node longestLiving;
+
+    private Node shortestLiving;
+
     public GraphUtil getGraph() {
         return this.graphUtil;
     }
@@ -57,5 +61,21 @@ public class CacheManagerService {
 
     public void setLeafNodes(List<Node> leafNodes) {
         this.leafNodes = leafNodes;
+    }
+
+    public Node getLongestLiving() {
+        return longestLiving;
+    }
+
+    public void setLongestLiving(Node longestLiving) {
+        this.longestLiving = longestLiving;
+    }
+
+    public Node getShortestLiving() {
+        return shortestLiving;
+    }
+
+    public void setShortestLiving(Node shortestLiving) {
+        this.shortestLiving = shortestLiving;
     }
 }

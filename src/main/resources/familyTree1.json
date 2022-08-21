@@ -1,0 +1,84 @@
+{
+  "lineage": {
+    "FamilyTree": "Some Family Tree",
+    "Members": [
+      {
+        "Name": "Parent One",
+        "BirthYear": "1221",
+        "DeathYear": "1264",
+        "Members": [
+          {
+            "Name": "Parent Two",
+            "BirthYear": "1245",
+            "DeathYear": "1300",
+            "Members": [
+              {
+                "Name": "Parent Three",
+                "BirthYear": "1270",
+                "DeathYear": "1333",
+                "Members": [
+                  {
+                    "Name": "Parent Four",
+                    "BirthYear": "1273",
+                    "DeathYear": "1356",
+                    "Members": [
+                      {
+                        "Name": "Parent Five",
+                        "BirthYear": "1299",
+                        "DeathYear": "1348"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "Name": "Child 22",
+                "BirthYear": "1272",
+                "DeathYear": "1300"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "Name": "Parent Six",
+        "BirthYear": "1212",
+        "DeathYear": "1260",
+        "Members": [
+          {
+            "Name": "Child 41",
+            "BirthYear": "1243",
+            "DeathYear": "1312"
+          },
+          {
+            "Name": "Parent Seven",
+            "BirthYear": "1245",
+            "DeathYear": "1274",
+            "Members": [
+              {
+                "Name": "Child 51",
+                "BirthYear": "1274",
+                "DeathYear": "1330"
+              },
+              {
+                "Name": "Child 52",
+                "BirthYear": "1276",
+                "DeathYear": "1312"
+              },
+              {
+                "Name": "Child 53",
+                "BirthYear": "1250",
+                "DeathYear": "1344"
+              },
+              {
+                "Name": "Child 54",
+                "BirthYear": "1278",
+                "DeathYear": "1352"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

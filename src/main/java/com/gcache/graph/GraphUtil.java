@@ -6,8 +6,8 @@ import org.jgrapht.traverse.BreadthFirstIterator;
 import org.jgrapht.traverse.DepthFirstIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Iterator;
-import java.util.List;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -119,6 +119,15 @@ public class GraphUtil {
             //log.info("identifier: " + dataNode.getIdentifier());
             //log.info(dataNode.getData().toString() + "->");
         }
+    }
+
+    public List<Node> getAllNodes(GraphInstance graphInstance) {
+        Iterator di = new DepthFirstIterator(graphInstance.getMultiGraph());
+        HashSet<Node> dataNodesSet = new HashSet<>();
+        while(di.hasNext()) {
+            dataNodesSet.add((Node)di.next());
+        }
+        return new ArrayList<>(dataNodesSet);
     }
 
     /**

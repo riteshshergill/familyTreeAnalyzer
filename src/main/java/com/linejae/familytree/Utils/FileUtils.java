@@ -9,7 +9,7 @@ public class FileUtils {
 
     public Root loadJsonFile() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        Root familyTreeData = mapper.readValue(new File("src/main/resources/familytree.json"), Root.class);
+        Root familyTreeData = mapper.readValue(new File("src/main/resources/familytree1.json"), Root.class);
         return familyTreeData;
     }
 }
