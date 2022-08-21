@@ -32,7 +32,7 @@ public class DataLoaderController {
      * @throws Exception
      */
     @GetMapping("/familyTree/loadData/{fileName}")
-    public Root loadFamilyTreeData(@@PathVariable String fileName) throws Exception {
+    public Root loadFamilyTreeData(@PathVariable String fileName) throws Exception {
         FileUtils fUtils = new FileUtils();
         Root lineageData = fUtils.loadJsonFile(fileName);
 

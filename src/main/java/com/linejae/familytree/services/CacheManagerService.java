@@ -1,6 +1,5 @@
 package com.linejae.familytree.services;
 
-import com.gcache.cache.CacheUtil;
 import com.gcache.graph.GraphUtil;
 import com.gcache.graph.model.Node;
 import org.springframework.context.annotation.Scope;

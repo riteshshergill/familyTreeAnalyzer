@@ -50,8 +50,8 @@ public class FamilyTreeEvaluationController {
     @GetMapping("/familyTree/lineageRange")
     public String getLineageRange() {
         List<Node> allNodes = lineageServices.getAllGraphNodes();
-        final AtomicInteger minBirthYear = new AtomicInteger(3999);
-        final AtomicInteger maxDeathYear = new AtomicInteger(0);
+        final AtomicInteger minBirthYear = new AtomicInteger(0);
+        final AtomicInteger maxDeathYear = new AtomicInteger(3999);
         lineageServices.getLineageRange(allNodes, minBirthYear, maxDeathYear);
         StringBuilder result = new StringBuilder();
         result.append("Alive from " + minBirthYear.get() + " to " + maxDeathYear.get());
@@ -69,74 +69,32 @@ public class FamilyTreeEvaluationController {
     }
 
     @GetMapping("/familyTree/getMedianAge")
-    public void getMedianAge() {
-        GraphUtil graphUtil = cacheManagerService.getGraph();
-        List<Node> allNodes = graphUtil.getAllNodes(graphUtil.getCurrentGraphInstance()).stream().filter((node) -> (node.getData() instanceof Member)).collect(Collectors.toList());
-        allNodes.sort((node1, node2) -> {
-            if(!(node1.getData() instanceof String) && !(node2.getData() instanceof String)) {
-                int node1age = Integer.parseInt(((Member)node1.getData()).getDeathYear()) - Integer.parseInt(((Member)node1.getData()).getBirthYear());
-                int node2age = Integer.parseInt(((Member)node2.getData()).getDeathYear()) - Integer.parseInt(((Member)node2.getData()).getBirthYear());
-                return node1age - node2age;
-
-            }
-            return 0;
-        });
-        cacheManagerService.setLongestLiving(allNodes.get(allNodes.size()-1));
-        cacheManagerService.setShortestLiving(allNodes.get(0));
-        Integer medianIndex = (allNodes.size()-1)/2;
-        if((allNodes.size()-1)%2 == 0) {
-            System.out.println("Median age: " + (deriveAge(allNodes.get(medianIndex)) + deriveAge(allNodes.get(medianIndex+1)))/2);
-        } else {
-            System.out.println("Median age: " + deriveAge(allNodes.get(medianIndex)));
-        }
-
+    public String getMedianAge() {
+        return "Median age is: " + lineageServices.getMedianAge();
     }
 
     @GetMapping("/familyTree/getInterQuartileAge")
     public void getInterQuartileAge() {
-        GraphUtil graphUtil = cacheManagerService.getGraph();
-        List<Node> allNodes = graphUtil.getAllNodes(graphUtil.getCurrentGraphInstance()).stream().filter((node) -> (node.getData() instanceof Member)).collect(Collectors.toList());
-        allNodes.sort((node1, node2) -> {
-            if(!(node1.getData() instanceof String) && !(node2.getData() instanceof String)) {
-                int node1age = Integer.parseInt(((Member)node1.getData()).getDeathYear()) - Integer.parseInt(((Member)node1.getData()).getBirthYear());
-                int node2age = Integer.parseInt(((Member)node2.getData()).getDeathYear()) - Integer.parseInt(((Member)node2.getData()).getBirthYear());
-                return node1age - node2age;
+        Integer[] quartileIndexes = lineageServices.getInterquartileRange();
+        List<Node> allNodes = lineageServices.getAllGraphNodes();
 
-            }
-            return 0;
-        });
-
-        Integer medianIndex = (allNodes.size()-1)/2;
-
-        Integer interQuartileStartIndex = 0;
-        Integer interQuartileEndIndex = 0;
-
-        if((allNodes.size()-1)%2 == 0) {
-            interQuartileStartIndex = medianIndex/2;
-            interQuartileEndIndex = (allNodes.size() + medianIndex)/2;
-        } else {
-            interQuartileStartIndex = (medianIndex/2) + 1;
-            interQuartileEndIndex = (allNodes.size() + (medianIndex))/2 + 1;
-        }
-
-        for(int i = interQuartileStartIndex; i <= interQuartileEndIndex; i++) {
+        for(int i = quartileIndexes[0]; i <= quartileIndexes[1]; i++) {
             System.out.println("Name: " + ((Member)allNodes.get(i).getData()).getName() + " Age: " + deriveAge(allNodes.get(i)));
         }
     }
 
     @GetMapping("/familyTree/getLongestShortestLiving")
-    public void getLongestAndShortestLiving() {
-        System.out.println("Longest living: " + ((Member)cacheManagerService.getLongestLiving().getData()).toString());
-        System.out.println("Shortest living: " + ((Member)cacheManagerService.getShortestLiving().getData()).toString());
+    public List<StringBuilder> getLongestAndShortestLiving() {
+        List<StringBuilder> resultList = new ArrayList<>();
+        StringBuilder longestLiving = new StringBuilder();
+        StringBuilder shortestLiving = new StringBuilder();
+        longestLiving.append("Longest living: " + ((Member)cacheManagerService.getLongestLiving().getData()).toString());
+        shortestLiving.append("Shortest living: " + ((Member)cacheManagerService.getShortestLiving().getData()).toString());
+        resultList.add(longestLiving);
+        resultList.add(shortestLiving);
+        return resultList;
     }
 
-    private Integer deriveBirthYear(Node data) {
-        return Integer.parseInt(((Member)data.getData()).getBirthYear());
-    }
-
-    private Integer deriveDeathYear(Node data) {
-        return Integer.parseInt(((Member)data.getData()).getDeathYear());
-    }
 
     private Integer deriveAge(Node data) {
         return (Integer.parseInt(((Member)data.getData()).getDeathYear()) - Integer.parseInt(((Member)data.getData()).getBirthYear()));

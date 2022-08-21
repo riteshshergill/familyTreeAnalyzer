@@ -4,8 +4,6 @@ import com.gcache.graph.model.DataWeighedEdge;
 import com.gcache.graph.model.Node;
 import org.jgrapht.traverse.BreadthFirstIterator;
 import org.jgrapht.traverse.DepthFirstIterator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -14,8 +12,6 @@ import java.util.stream.Collectors;
  * Utility class to access the Graph instance and perform functions on it
  */
 public class GraphUtil {
-
-    private static Logger log = LoggerFactory.getLogger(GraphUtil.class);
 
     private GraphInstance currentGraphInstance = new GraphInstance();
 
@@ -99,15 +95,15 @@ public class GraphUtil {
             di = new BreadthFirstIterator(graphInstance.getMultiGraph());
         } else {
             graphInstance.getMultiGraph().edgeSet().stream().forEach(edge -> {
-                log.info("Relation metadata: " + (edge.getRelationMetadata() != null ? edge.getRelationMetadata().toString() : ""));
+                System.out.print("Relation metadata: " + (edge.getRelationMetadata() != null ? edge.getRelationMetadata().toString() : ""));
                 Node parentNode = (Node) edge.getSourceVertex();
                 Node childNode = (Node) edge.getTargetVertex();
 
-                log.info("parent identifier: " + parentNode.getIdentifier());
-                log.info("parent data: " + parentNode.getData());
+                System.out.print("parent identifier: " + parentNode.getIdentifier());
+                System.out.print("parent data: " + parentNode.getData());
 
-                log.info("child identifier: " + childNode.getIdentifier());
-                log.info("child data: " + childNode.getData());
+                System.out.print("child identifier: " + childNode.getIdentifier());
+                System.out.print("child data: " + childNode.getData());
             });
             return;
         }
@@ -115,9 +111,6 @@ public class GraphUtil {
         while(di.hasNext()) {
             Node dataNode = (Node)di.next();
             System.out.print(dataNode.getData().toString() + "->");
-
-            //log.info("identifier: " + dataNode.getIdentifier());
-            //log.info(dataNode.getData().toString() + "->");
         }
     }
 

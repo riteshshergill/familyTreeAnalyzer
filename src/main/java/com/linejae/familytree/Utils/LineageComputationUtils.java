@@ -2,10 +2,21 @@ package com.linejae.familytree.Utils;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Helper class for computations
+ */
 public class LineageComputationUtils {
 
-    public static void constructLineageResult(List<LinkedList<String>> antecedants, List<StringBuilder> finalLineages) {
+    /**
+     * Get the lineage
+     * @param antecedants Parents for a node
+     * @param finalLineages Resulting lineage
+     * @param longest Longest lineage
+     * @param shortest Shortest lineage
+     */
+    public static void constructLineageResult(List<LinkedList<String>> antecedants, List<StringBuilder> finalLineages, AtomicInteger longest, AtomicInteger shortest) {
         antecedants.stream().forEach((antecedantList -> {
             StringBuilder lineage = new StringBuilder();
             final StringBuilder longAppendString = new StringBuilder();

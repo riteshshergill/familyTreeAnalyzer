@@ -22,7 +22,7 @@ public class LineageServices {
 
     /**
      * Method to compute the family treelineage
-     * @return
+     * @return The resulting lineage
      */
     public List<StringBuilder> getLineage() {
         List<Node> leafNodes = cacheManagerService.getLeafNodes();
@@ -31,10 +31,15 @@ public class LineageServices {
         final AtomicInteger shortest = new AtomicInteger(cacheManagerService.getDepth() + 4);
         leafNodes.stream().forEach((leaf) -> antecedants.add(TreeUtils.findParents(leaf, longest, shortest)));
         List<StringBuilder> finalLineages = new ArrayList<>();
-        LineageComputationUtils.constructLineageResult(antecedants, finalLineages);
+        LineageComputationUtils.constructLineageResult(antecedants, finalLineages, longest, shortest);
         return finalLineages;
     }
 
+    /**
+     * Method to get nodes sorted in provided order
+     * @param sortOrder ASC or DESC
+     * @return Nodes in sorted order of age
+     */
     public List<Node> getAllSortedNodes(String sortOrder) {
         List<Node> allNodes = getAllGraphNodes();
         allNodes.sort((node1, node2) -> {
@@ -52,6 +57,12 @@ public class LineageServices {
         return allNodes;
     }
 
+    /**
+     * Method to get the range of the lineage from first birth year to last death year
+     * @param allNodes
+     * @param maxDeathYear Max death year for any member
+     * @param minBirthYear Min birth year for any member
+     */
     public void getLineageRange(List<Node> allNodes, AtomicInteger maxDeathYear, AtomicInteger minBirthYear) {
         allNodes.stream().forEach(node -> {
             if(!(node.getData() instanceof String)) {
@@ -65,6 +76,11 @@ public class LineageServices {
         });
     }
 
+    /**
+     * Method to get the mean age across the lienage
+     * @param allNodes
+     * @param meanAge Calculate mean of all the ages
+     */
     public void getMeanAge(List<Node> allNodes, AtomicInteger meanAge) {
         allNodes.stream().forEach(node -> {
             if(!(node.getData() instanceof String)) {
@@ -73,8 +89,86 @@ public class LineageServices {
         });
     }
 
+    /**
+     * Method to get the media of all the ages in the lineage
+     * @return the median of all the ages
+     */
+    public Integer getMedianAge() {
+        GraphUtil graphUtil = cacheManagerService.getGraph();
+        List<Node> allNodes = graphUtil.getAllNodes(graphUtil.getCurrentGraphInstance()).stream().filter((node) -> (node.getData() instanceof Member)).collect(Collectors.toList());
+        allNodes.sort((node1, node2) -> {
+            if(!(node1.getData() instanceof String) && !(node2.getData() instanceof String)) {
+                int node1age = deriveDeathYear(node1) - deriveBirthYear(node1);
+                int node2age = deriveDeathYear(node2) - deriveBirthYear(node2);
+                return node1age - node2age;
+
+            }
+            return 0;
+        });
+        cacheManagerService.setLongestLiving(allNodes.get(allNodes.size()-1));
+        cacheManagerService.setShortestLiving(allNodes.get(0));
+        Integer medianIndex = (allNodes.size()-1)/2;
+        if((allNodes.size()-1)%2 == 0) {
+            return (deriveAge(allNodes.get(medianIndex)) + deriveAge(allNodes.get(medianIndex+1)))/2;
+        } else {
+            return deriveAge(allNodes.get(medianIndex));
+        }
+    }
+
+    /**
+     * Methog to the interquartile range members of the lineage
+     * @return the Interqurtile start index and endindex in an array with these 2 values
+     */
+    public Integer[] getInterquartileRange() {
+        GraphUtil graphUtil = cacheManagerService.getGraph();
+        List<Node> allNodes = graphUtil.getAllNodes(graphUtil.getCurrentGraphInstance()).stream().filter((node) -> (node.getData() instanceof Member)).collect(Collectors.toList());
+        allNodes.sort((node1, node2) -> {
+            if(!(node1.getData() instanceof String) && !(node2.getData() instanceof String)) {
+                int node1age = deriveDeathYear(node1) - deriveBirthYear(node1);
+                int node2age = deriveDeathYear(node2) - deriveBirthYear(node2);
+                return node1age - node2age;
+
+            }
+            return 0;
+        });
+
+        Integer medianIndex = (allNodes.size()-1)/2;
+
+        Integer interQuartileStartIndex = 0;
+        Integer interQuartileEndIndex = 0;
+
+        if((allNodes.size()-1)%2 == 0) {
+            interQuartileStartIndex = medianIndex/2;
+            interQuartileEndIndex = (allNodes.size() + medianIndex)/2;
+        } else {
+            interQuartileStartIndex = (medianIndex/2) + 1;
+            interQuartileEndIndex = (allNodes.size() + (medianIndex))/2 + 1;
+        }
+
+        Integer[] quartileIndexes = new Integer[2];
+        quartileIndexes[0] = interQuartileStartIndex;
+        quartileIndexes[1] = interQuartileEndIndex;
+        return quartileIndexes;
+    }
+
+    /**
+     * Method to get all the nodes stored in the graph
+     * @return List of all unique nodes in the graph
+     */
     public List<Node> getAllGraphNodes() {
         GraphUtil graphUtil = cacheManagerService.getGraph();
         return graphUtil.getAllNodes(graphUtil.getCurrentGraphInstance()).stream().filter((node) -> (node.getData() instanceof Member)).collect(Collectors.toList());
+    }
+
+    private Integer deriveBirthYear(Node data) {
+        return Integer.parseInt(((Member)data.getData()).getBirthYear());
+    }
+
+    private Integer deriveDeathYear(Node data) {
+        return Integer.parseInt(((Member)data.getData()).getDeathYear());
+    }
+
+    private Integer deriveAge(Node data) {
+        return (Integer.parseInt(((Member)data.getData()).getDeathYear()) - Integer.parseInt(((Member)data.getData()).getBirthYear()));
     }
 }
