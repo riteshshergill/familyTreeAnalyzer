@@ -3,10 +3,12 @@ package com.linejae.familytree.controllers;
 import com.gcache.graph.GraphUtil;
 import com.gcache.graph.model.Node;
 import com.linejae.familytree.Utils.FileUtils;
+import com.linejae.familytree.Utils.LineageComputationUtils;
 import com.linejae.familytree.Utils.MockDataGeneratorUtil;
 import com.linejae.familytree.models.Member;
 import com.linejae.familytree.models.Root;
 import com.linejae.familytree.services.CacheManagerService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,11 +41,24 @@ public class DataLoaderController {
 
         //caching all relationships in the graph cache
         if(lineageData.getLineage() != null) {
+            if(lineageData.getLineage().getFamilyTree() == null
+                    || StringUtils.isEmpty(lineageData.getLineage().getFamilyTree())) {
+                throw new Exception("Family tree name must be present!");
+            }
+            if(lineageData.getLineage().getMembers() == null) {
+                throw new Exception("Family tree must have members!");
+            }
             Node startingNode = new Node(lineageData.getLineage().getFamilyTree(), lineageData.getLineage().getFamilyTree());
 
             //add the root to the graph first then send its children for addition
             //recursively
             for(Member rootchildren: lineageData.getLineage().getMembers()) {
+                try {
+                    LineageComputationUtils.validateMember(rootchildren);
+                } catch (Exception e) {
+                    System.out.println("Invalid member found, skipping..");
+                    continue;
+                }
                 Node rootchild = new Node(rootchildren.toString(), rootchildren);
                 cacheManagerService.getGraph().addRelationship(startingNode, rootchild);
             }
@@ -74,9 +89,22 @@ public class DataLoaderController {
          }
         members.forEach((memberObject -> {
 
+            try {
+                LineageComputationUtils.validateMember(memberObject);
+            } catch (Exception e) {
+                System.out.println("Invalid member found, skipping..");
+                return;
+            }
+
             if(memberObject.getMembers() != null) {
                 cacheManagerService.setDepth(cacheManagerService.getDepth() + 1);
                 for(Member memberChild: memberObject.getMembers()) {
+                    try {
+                        LineageComputationUtils.validateMember(memberChild);
+                    } catch (Exception e) {
+                        System.out.println("Invalid member found, skipping..");
+                        continue;
+                    }
                     Node parentNode = new Node(memberObject.toString(), memberObject, parent);
                     Node memberNode = new Node(memberChild.toString(), memberChild, parentNode);
                     graphUtil.addRelationship(parentNode, memberNode);

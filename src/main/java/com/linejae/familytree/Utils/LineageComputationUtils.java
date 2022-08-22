@@ -1,5 +1,8 @@
 package com.linejae.familytree.Utils;
 
+import com.linejae.familytree.models.Member;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,5 +44,13 @@ public class LineageComputationUtils {
             }
             finalLineages.add(lineage);
         }));
+    }
+
+    public static void validateMember(Member member) throws Exception {
+        if(member.getName() == null || member.getBirthYear() == null || member.getDeathYear() == null
+                || StringUtils.isEmpty(member.getName()) || StringUtils.isEmpty(member.getBirthYear())
+                || StringUtils.isEmpty(member.getDeathYear())) {
+            throw new Exception("Member must have a name, birth year and death year");
+        }
     }
 }

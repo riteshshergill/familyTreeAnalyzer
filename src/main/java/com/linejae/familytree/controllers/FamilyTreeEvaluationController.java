@@ -35,8 +35,7 @@ public class FamilyTreeEvaluationController {
     }
 
     @GetMapping("/familyTree/printSorted/{sortOrder}")
-    public List<StringBuilder> printByAge(@PathVariable String sortOrder) {
-        GraphUtil graphUtil = cacheManagerService.getGraph();
+    public List<StringBuilder> printByAge(@PathVariable String sortOrder) throws Exception {
         List<Node> allNodes = lineageServices.getAllSortedNodes(sortOrder);
         List<StringBuilder> returnList = new ArrayList<>();
         for (Node node : allNodes) {
@@ -48,8 +47,11 @@ public class FamilyTreeEvaluationController {
     }
 
     @GetMapping("/familyTree/lineageRange")
-    public String getLineageRange() {
+    public String getLineageRange() throws Exception {
         List<Node> allNodes = lineageServices.getAllGraphNodes();
+        if(allNodes == null || allNodes.isEmpty()) {
+            throw new Exception("Cannot get lineage for an empty tree");
+        }
         final AtomicInteger minBirthYear = new AtomicInteger(0);
         final AtomicInteger maxDeathYear = new AtomicInteger(3999);
         lineageServices.getLineageRange(allNodes, minBirthYear, maxDeathYear);
@@ -59,8 +61,11 @@ public class FamilyTreeEvaluationController {
     }
 
     @GetMapping("/familyTree/meanAge")
-    public String getMeanAge() {
+    public String getMeanAge() throws Exception {
         List<Node> allNodes = lineageServices.getAllGraphNodes();
+        if(allNodes == null || allNodes.isEmpty()) {
+            throw new Exception("Cannot get mean age for an empty tree");
+        }
         final AtomicInteger meanAge = new AtomicInteger(0);
         lineageServices.getMeanAge(allNodes, meanAge);
         StringBuilder result = new StringBuilder();
@@ -69,25 +74,37 @@ public class FamilyTreeEvaluationController {
     }
 
     @GetMapping("/familyTree/getMedianAge")
-    public String getMedianAge() {
+    public String getMedianAge() throws Exception {
         return "Median age is: " + lineageServices.getMedianAge();
     }
 
     @GetMapping("/familyTree/getInterQuartileAge")
-    public void getInterQuartileAge() {
+    public List<StringBuilder> getInterQuartileAge() throws Exception {
         Integer[] quartileIndexes = lineageServices.getInterquartileRange();
         List<Node> allNodes = lineageServices.getAllGraphNodes();
-
-        for(int i = quartileIndexes[0]; i <= quartileIndexes[1]; i++) {
-            System.out.println("Name: " + ((Member)allNodes.get(i).getData()).getName() + " Age: " + deriveAge(allNodes.get(i)));
+        if(allNodes == null || allNodes.isEmpty()) {
+            throw new Exception("Cannot get inter quartile for an empty tree");
         }
+        List<StringBuilder> returnList = new ArrayList<>();
+        for(int i = quartileIndexes[0]; i <= quartileIndexes[1]; i++) {
+            StringBuilder retStr = new StringBuilder();
+            retStr.append("Name: " + ((Member)allNodes.get(i).getData()).getName() + " Age: " + deriveAge(allNodes.get(i)));
+            returnList.add(retStr);
+        }
+        return returnList;
     }
 
     @GetMapping("/familyTree/getLongestShortestLiving")
-    public List<StringBuilder> getLongestAndShortestLiving() {
+    public List<StringBuilder> getLongestAndShortestLiving() throws Exception {
         List<StringBuilder> resultList = new ArrayList<>();
         StringBuilder longestLiving = new StringBuilder();
         StringBuilder shortestLiving = new StringBuilder();
+        if(cacheManagerService.getLongestLiving() == null) {
+            throw new Exception("Please calculate the median age first for longest living to be available.");
+        }
+        if(cacheManagerService.getShortestLiving() == null) {
+            throw new Exception("Please calculate the median age first for shortest living to be available.");
+        }
         longestLiving.append("Longest living: " + ((Member)cacheManagerService.getLongestLiving().getData()).toString());
         shortestLiving.append("Shortest living: " + ((Member)cacheManagerService.getShortestLiving().getData()).toString());
         resultList.add(longestLiving);
@@ -98,20 +115,5 @@ public class FamilyTreeEvaluationController {
 
     private Integer deriveAge(Node data) {
         return (Integer.parseInt(((Member)data.getData()).getDeathYear()) - Integer.parseInt(((Member)data.getData()).getBirthYear()));
-    }
-
-    private void getLongestPath(List<Member> members, Integer longCount, LinkedList<String> longestLineage) {
-        if(members == null) {
-            return;
-        }
-        for(Member eachMember : members) {
-            if(eachMember.getMembers() != null) {
-                longCount++;
-                longestLineage.add(eachMember.toString());
-                getLongestPath(eachMember.getMembers(), longCount, longestLineage);
-            } else {
-                break;
-            }
-        }
     }
 }

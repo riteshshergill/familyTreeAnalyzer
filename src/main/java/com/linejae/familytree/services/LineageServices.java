@@ -24,8 +24,11 @@ public class LineageServices {
      * Method to compute the family treelineage
      * @return The resulting lineage
      */
-    public List<StringBuilder> getLineage() {
+    public List<StringBuilder> getLineage() throws Exception {
         List<Node> leafNodes = cacheManagerService.getLeafNodes();
+        if(leafNodes == null || leafNodes.size() == 0) {
+            throw new Exception("Tree doesn't have leaves cant evaluate Lineage");
+        }
         final List<LinkedList<String>> antecedants = new ArrayList<>();
         final AtomicInteger longest = new AtomicInteger(0);
         final AtomicInteger shortest = new AtomicInteger(cacheManagerService.getDepth() + 4);
@@ -40,8 +43,11 @@ public class LineageServices {
      * @param sortOrder ASC or DESC
      * @return Nodes in sorted order of age
      */
-    public List<Node> getAllSortedNodes(String sortOrder) {
+    public List<Node> getAllSortedNodes(String sortOrder) throws Exception {
         List<Node> allNodes = getAllGraphNodes();
+        if(allNodes == null || allNodes.isEmpty()) {
+            throw new Exception("Cannot sort an empty tree");
+        }
         allNodes.sort((node1, node2) -> {
             if(!(node1.getData() instanceof String) && !(node2.getData() instanceof String)) {
                 int node1age = Integer.parseInt(((Member)node1.getData()).getDeathYear()) - Integer.parseInt(((Member)node1.getData()).getBirthYear());
@@ -93,9 +99,14 @@ public class LineageServices {
      * Method to get the media of all the ages in the lineage
      * @return the median of all the ages
      */
-    public Integer getMedianAge() {
+    public Integer getMedianAge() throws Exception {
         GraphUtil graphUtil = cacheManagerService.getGraph();
         List<Node> allNodes = graphUtil.getAllNodes(graphUtil.getCurrentGraphInstance()).stream().filter((node) -> (node.getData() instanceof Member)).collect(Collectors.toList());
+
+        if(allNodes == null || allNodes.isEmpty()) {
+            throw new Exception("Cannot get Median age for an empty tree");
+        }
+
         allNodes.sort((node1, node2) -> {
             if(!(node1.getData() instanceof String) && !(node2.getData() instanceof String)) {
                 int node1age = deriveDeathYear(node1) - deriveBirthYear(node1);
@@ -155,7 +166,7 @@ public class LineageServices {
      * Method to get all the nodes stored in the graph
      * @return List of all unique nodes in the graph
      */
-    public List<Node> getAllGraphNodes() {
+    public List<Node> getAllGraphNodes() throws Exception {
         GraphUtil graphUtil = cacheManagerService.getGraph();
         return graphUtil.getAllNodes(graphUtil.getCurrentGraphInstance()).stream().filter((node) -> (node.getData() instanceof Member)).collect(Collectors.toList());
     }
