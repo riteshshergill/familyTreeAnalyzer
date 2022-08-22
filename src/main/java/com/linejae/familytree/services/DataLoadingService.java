@@ -3,6 +3,7 @@ package com.linejae.familytree.services;
 import com.gcache.graph.GraphUtil;
 import com.gcache.graph.model.Node;
 import com.linejae.familytree.Utils.LineageComputationUtils;
+import com.linejae.familytree.Utils.TreeUtils;
 import com.linejae.familytree.models.Member;
 import com.linejae.familytree.models.Root;
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +60,7 @@ public class DataLoadingService {
             //Add the depth for the tree even as we construct it
             dataManager.setDepth(dataManager.getDepth() + 1);
             //send the children to be added to the graph recursively
-            cacheChildren(lineageData.getLineage().getMembers(), dataManager.getGraph(), startingNode);
+            TreeUtils.cacheChildren(lineageData.getLineage().getMembers(), dataManager.getGraph(), startingNode, dataManager);
 
         }
         return dataManager;
@@ -102,8 +103,8 @@ public class DataLoadingService {
         if(allNodes == null || allNodes.isEmpty()) {
             throw new Exception("Cannot get lineage for an empty tree");
         }
-        final AtomicInteger minBirthYear = new AtomicInteger(0);
-        final AtomicInteger maxDeathYear = new AtomicInteger(3999);
+        AtomicInteger minBirthYear = new AtomicInteger(3999);
+        AtomicInteger maxDeathYear = new AtomicInteger(1);
         lineageServices.getLineageRange(allNodes, minBirthYear, maxDeathYear);
         StringBuilder result = new StringBuilder();
         result.append("Alive from " + minBirthYear.get() + " to " + maxDeathYear.get());
@@ -180,40 +181,5 @@ public class DataLoadingService {
 
     private Integer deriveAge(Node data) {
         return (Integer.parseInt(((Member)data.getData()).getDeathYear()) - Integer.parseInt(((Member)data.getData()).getBirthYear()));
-    }
-
-    private void cacheChildren(ArrayList<Member> members, GraphUtil graphUtil, Node parent) {
-        if(members == null) {
-            return;
-        }
-        members.forEach((memberObject -> {
-
-            try {
-                LineageComputationUtils.validateMember(memberObject);
-            } catch (Exception e) {
-                System.out.println("Invalid member found, skipping..");
-                return;
-            }
-
-            if(memberObject.getMembers() != null) {
-                dataManager.setDepth(dataManager.getDepth() + 1);
-                for(Member memberChild: memberObject.getMembers()) {
-                    try {
-                        LineageComputationUtils.validateMember(memberChild);
-                    } catch (Exception e) {
-                        System.out.println("Invalid member found, skipping..");
-                        continue;
-                    }
-                    Node parentNode = new Node(memberObject.toString(), memberObject, parent);
-                    Node memberNode = new Node(memberChild.toString(), memberChild, parentNode);
-                    graphUtil.addRelationship(parentNode, memberNode);
-                    cacheChildren(memberChild.getMembers(), graphUtil, memberNode);
-                }
-            } else {
-                Node leafNode = new Node(memberObject.toString(), memberObject, parent);
-                graphUtil.addRelationship(leafNode, null);
-                dataManager.getLeafNodes().add(leafNode);
-            }
-        }));
     }
 }

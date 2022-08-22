@@ -1,7 +1,11 @@
 package com.linejae.familytree.Utils;
 
+import com.gcache.graph.GraphUtil;
 import com.gcache.graph.model.Node;
+import com.linejae.familytree.models.Member;
+import com.linejae.familytree.services.CacheManagerService;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,5 +38,47 @@ public class TreeUtils {
             shortest.set(antecedantsList.size());
         }
         return antecedantsList;
+    }
+
+    /**
+     * Recursive function to add the members into a graph
+     * @param members All the members added recursively
+     * @param graphUtil Wrapper utility for the graph
+     * @param parent Parent object
+     * @param dataManager To store the results and pass to other services
+     */
+    public static void cacheChildren(ArrayList<Member> members, GraphUtil graphUtil, Node parent, CacheManagerService dataManager) {
+        if(members == null) {
+            return;
+        }
+        members.forEach((memberObject -> {
+
+            try {
+                LineageComputationUtils.validateMember(memberObject);
+            } catch (Exception e) {
+                System.out.println("Invalid member found, skipping..");
+                return;
+            }
+
+            if(memberObject.getMembers() != null) {
+                dataManager.setDepth(dataManager.getDepth() + 1);
+                for(Member memberChild: memberObject.getMembers()) {
+                    try {
+                        LineageComputationUtils.validateMember(memberChild);
+                    } catch (Exception e) {
+                        System.out.println("Invalid member found, skipping..");
+                        continue;
+                    }
+                    Node parentNode = new Node(memberObject.toString(), memberObject, parent);
+                    Node memberNode = new Node(memberChild.toString(), memberChild, parentNode);
+                    graphUtil.addRelationship(parentNode, memberNode);
+                    cacheChildren(memberChild.getMembers(), graphUtil, memberNode, dataManager);
+                }
+            } else {
+                Node leafNode = new Node(memberObject.toString(), memberObject, parent);
+                graphUtil.addRelationship(leafNode, null);
+                dataManager.getLeafNodes().add(leafNode);
+            }
+        }));
     }
 }

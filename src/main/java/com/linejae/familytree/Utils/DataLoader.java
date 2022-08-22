@@ -11,6 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Stateless version of the Dataloader service class
+ * created to support multithreaded loading of data
+ * and keeping each lineage computation local to the Tasklet
+ */
 public class DataLoader {
 
     /**
@@ -50,7 +55,7 @@ public class DataLoader {
             //Add the depth for the tree even as we construct it
             dataManager.setDepth(dataManager.getDepth() + 1);
             //send the children to be added to the graph recursively
-            cacheChildren(lineageData.getLineage().getMembers(), dataManager.getGraph(), startingNode, dataManager);
+            TreeUtils.cacheChildren(lineageData.getLineage().getMembers(), dataManager.getGraph(), startingNode, dataManager);
 
         }
         return dataManager;
@@ -99,8 +104,8 @@ public class DataLoader {
         if(allNodes == null || allNodes.isEmpty()) {
             throw new Exception("Cannot get lineage for an empty tree");
         }
-        final AtomicInteger minBirthYear = new AtomicInteger(0);
-        final AtomicInteger maxDeathYear = new AtomicInteger(3999);
+        AtomicInteger minBirthYear = new AtomicInteger(3999);
+        AtomicInteger maxDeathYear = new AtomicInteger(1);
         lineageServices.getLineageRange(allNodes, minBirthYear, maxDeathYear);
         StringBuilder result = new StringBuilder();
         result.append("Alive from " + minBirthYear.get() + " to " + maxDeathYear.get());
@@ -153,7 +158,7 @@ public class DataLoader {
         List<StringBuilder> returnList = new ArrayList<>();
         for(int i = quartileIndexes[0]; i <= quartileIndexes[1]; i++) {
             StringBuilder retStr = new StringBuilder();
-            retStr.append("Name: " + ((Member)allNodes.get(i).getData()).getName() + " Age: " + deriveAge(allNodes.get(i)));
+            retStr.append("Name: " + ((Member)allNodes.get(i).getData()).getName() + " Age: " + LineageComputationUtils.deriveAge(allNodes.get(i)));
             returnList.add(retStr);
         }
         return returnList;
@@ -180,44 +185,5 @@ public class DataLoader {
         resultList.add(longestLiving);
         resultList.add(shortestLiving);
         return resultList;
-    }
-
-    private Integer deriveAge(Node data) {
-        return (Integer.parseInt(((Member)data.getData()).getDeathYear()) - Integer.parseInt(((Member)data.getData()).getBirthYear()));
-    }
-
-    private void cacheChildren(ArrayList<Member> members, GraphUtil graphUtil, Node parent, CacheManagerService dataManager) {
-        if(members == null) {
-            return;
-        }
-        members.forEach((memberObject -> {
-
-            try {
-                LineageComputationUtils.validateMember(memberObject);
-            } catch (Exception e) {
-                System.out.println("Invalid member found, skipping..");
-                return;
-            }
-
-            if(memberObject.getMembers() != null) {
-                dataManager.setDepth(dataManager.getDepth() + 1);
-                for(Member memberChild: memberObject.getMembers()) {
-                    try {
-                        LineageComputationUtils.validateMember(memberChild);
-                    } catch (Exception e) {
-                        System.out.println("Invalid member found, skipping..");
-                        continue;
-                    }
-                    Node parentNode = new Node(memberObject.toString(), memberObject, parent);
-                    Node memberNode = new Node(memberChild.toString(), memberChild, parentNode);
-                    graphUtil.addRelationship(parentNode, memberNode);
-                    cacheChildren(memberChild.getMembers(), graphUtil, memberNode, dataManager);
-                }
-            } else {
-                Node leafNode = new Node(memberObject.toString(), memberObject, parent);
-                graphUtil.addRelationship(leafNode, null);
-                dataManager.getLeafNodes().add(leafNode);
-            }
-        }));
     }
 }

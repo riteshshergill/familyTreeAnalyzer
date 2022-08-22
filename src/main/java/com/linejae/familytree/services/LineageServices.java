@@ -77,14 +77,16 @@ public class LineageServices {
      * @param maxDeathYear Max death year for any member
      * @param minBirthYear Min birth year for any member
      */
-    public void getLineageRange(List<Node> allNodes, AtomicInteger maxDeathYear, AtomicInteger minBirthYear) {
-        allNodes.stream().forEach(node -> {
+    public void getLineageRange(List<Node> allNodes, AtomicInteger minBirthYear, AtomicInteger maxDeathYear) {
+        allNodes.forEach(node -> {
             if(!(node.getData() instanceof String)) {
-                if((Integer.parseInt(((Member)node.getData()).getDeathYear()) > maxDeathYear.get())) {
-                    maxDeathYear.set((Integer.parseInt(((Member)node.getData()).getDeathYear())));
+                int maximumDeathYear = LineageComputationUtils.deriveDeathYear(node);
+                int minimumBirthYear = LineageComputationUtils.deriveBirthYear(node);
+                if(maximumDeathYear > maxDeathYear.get()) {
+                    maxDeathYear.set(maximumDeathYear);
                 }
-                if((Integer.parseInt(((Member)node.getData()).getBirthYear()) < minBirthYear.get())) {
-                    minBirthYear.set((Integer.parseInt(((Member)node.getData()).getBirthYear())));
+                if(minimumBirthYear < minBirthYear.get()) {
+                    minBirthYear.set(minimumBirthYear);
                 }
             }
         });
@@ -117,8 +119,8 @@ public class LineageServices {
 
         allNodes.sort((node1, node2) -> {
             if(!(node1.getData() instanceof String) && !(node2.getData() instanceof String)) {
-                int node1age = deriveDeathYear(node1) - deriveBirthYear(node1);
-                int node2age = deriveDeathYear(node2) - deriveBirthYear(node2);
+                int node1age = LineageComputationUtils.deriveDeathYear(node1) - LineageComputationUtils.deriveBirthYear(node1);
+                int node2age = LineageComputationUtils.deriveDeathYear(node2) - LineageComputationUtils.deriveBirthYear(node2);
                 return node1age - node2age;
 
             }
@@ -128,9 +130,9 @@ public class LineageServices {
         cacheManagerService.setShortestLiving(allNodes.get(0));
         Integer medianIndex = (allNodes.size()-1)/2;
         if((allNodes.size()-1)%2 == 0) {
-            return (deriveAge(allNodes.get(medianIndex)) + deriveAge(allNodes.get(medianIndex+1)))/2;
+            return (LineageComputationUtils.deriveAge(allNodes.get(medianIndex)) + LineageComputationUtils.deriveAge(allNodes.get(medianIndex+1)))/2;
         } else {
-            return deriveAge(allNodes.get(medianIndex));
+            return LineageComputationUtils.deriveAge(allNodes.get(medianIndex));
         }
     }
 
@@ -143,8 +145,8 @@ public class LineageServices {
         List<Node> allNodes = graphUtil.getAllNodes(graphUtil.getCurrentGraphInstance()).stream().filter((node) -> (node.getData() instanceof Member)).collect(Collectors.toList());
         allNodes.sort((node1, node2) -> {
             if(!(node1.getData() instanceof String) && !(node2.getData() instanceof String)) {
-                int node1age = deriveDeathYear(node1) - deriveBirthYear(node1);
-                int node2age = deriveDeathYear(node2) - deriveBirthYear(node2);
+                int node1age = LineageComputationUtils.deriveDeathYear(node1) - LineageComputationUtils.deriveBirthYear(node1);
+                int node2age = LineageComputationUtils.deriveDeathYear(node2) - LineageComputationUtils.deriveBirthYear(node2);
                 return node1age - node2age;
 
             }
@@ -177,17 +179,5 @@ public class LineageServices {
     public List<Node> getAllGraphNodes() throws Exception {
         GraphUtil graphUtil = cacheManagerService.getGraph();
         return graphUtil.getAllNodes(graphUtil.getCurrentGraphInstance()).stream().filter((node) -> (node.getData() instanceof Member)).collect(Collectors.toList());
-    }
-
-    private Integer deriveBirthYear(Node data) {
-        return Integer.parseInt(((Member)data.getData()).getBirthYear());
-    }
-
-    private Integer deriveDeathYear(Node data) {
-        return Integer.parseInt(((Member)data.getData()).getDeathYear());
-    }
-
-    private Integer deriveAge(Node data) {
-        return (Integer.parseInt(((Member)data.getData()).getDeathYear()) - Integer.parseInt(((Member)data.getData()).getBirthYear()));
     }
 }

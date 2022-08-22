@@ -52,8 +52,8 @@ public class FamilyTreeEvaluationController {
         if(allNodes == null || allNodes.isEmpty()) {
             throw new Exception("Cannot get lineage for an empty tree");
         }
-        final AtomicInteger minBirthYear = new AtomicInteger(0);
-        final AtomicInteger maxDeathYear = new AtomicInteger(3999);
+        AtomicInteger minBirthYear = new AtomicInteger(3999);
+        AtomicInteger maxDeathYear = new AtomicInteger(1);
         lineageServices.getLineageRange(allNodes, minBirthYear, maxDeathYear);
         StringBuilder result = new StringBuilder();
         result.append("Alive from " + minBirthYear.get() + " to " + maxDeathYear.get());

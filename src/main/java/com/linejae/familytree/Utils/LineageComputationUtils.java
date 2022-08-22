@@ -1,5 +1,6 @@
 package com.linejae.familytree.Utils;
 
+import com.gcache.graph.model.Node;
 import com.linejae.familytree.models.Member;
 import org.apache.commons.lang3.StringUtils;
 
@@ -57,5 +58,30 @@ public class LineageComputationUtils {
                 || StringUtils.isEmpty(member.getDeathYear())) {
             throw new Exception("Member must have a name, birth year and death year");
         }
+        int deathYear = 0;
+        int birthYear = 0;
+        try {
+            deathYear = Integer.parseInt(member.getDeathYear());
+            birthYear = Integer.parseInt(member.getBirthYear());
+        } catch(NumberFormatException e) {
+            throw new Exception("Error parsing the birth or death year value!");
+        }
+        if(deathYear < birthYear) {
+            throw new Exception("Birth year must come before Death year");
+        }
+
+    }
+
+    //utility methods to parse the year data and calculate age
+    public static Integer deriveBirthYear(Node data) {
+        return Integer.parseInt(((Member)data.getData()).getBirthYear());
+    }
+
+    public static Integer deriveDeathYear(Node data) {
+        return Integer.parseInt(((Member)data.getData()).getDeathYear());
+    }
+
+    public static Integer deriveAge(Node data) {
+        return (Integer.parseInt(((Member)data.getData()).getDeathYear()) - Integer.parseInt(((Member)data.getData()).getBirthYear()));
     }
 }
