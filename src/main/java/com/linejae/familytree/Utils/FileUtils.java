@@ -13,6 +13,11 @@ import java.util.List;
  */
 public class FileUtils {
 
+    /**
+     * Write the results for processing a lineage
+     * @param report
+     * @throws Exception
+     */
     public static void generateReport(Report report) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(new File("C:/temp/familytreedata/" + report.getFamilyTreeName() + ".json"), report);
@@ -30,11 +35,22 @@ public class FileUtils {
         return familyTreeData;
     }
 
+    /**
+     * Write a randomly generated lineage
+     * @param root
+     * @param fileName
+     * @throws Exception
+     */
     public static void writeRandomFile(Root root, String fileName) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(new File("src/main/resources/" + fileName), root);
     }
 
+    /**
+     * Method to load data for multiple files
+     * @return All the lineages read from the files
+     * @throws Exception
+     */
     public static List<Root> loadAllFiles() throws Exception {
         File file = new File("src/main/resources");
         ObjectMapper mapper = new ObjectMapper();

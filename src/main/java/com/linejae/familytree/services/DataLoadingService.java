@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Service to process all the loaded linegae data
+ */
 @Service
 public class DataLoadingService {
 
@@ -21,6 +24,12 @@ public class DataLoadingService {
     @Autowired
     private LineageServices lineageServices;
 
+    /**
+     * Load the lineage data
+     * @param lineageData
+     * @return loaded and processed lineage data in the CacheManagerService
+     * @throws Exception
+     */
     public CacheManagerService loadData(Root lineageData) throws Exception {
         dataManager.setGraph(new GraphUtil());
         //caching all relationships in the graph cache
@@ -56,11 +65,22 @@ public class DataLoadingService {
         return dataManager;
     }
 
+    /**
+     * Print individual family lines and mark the family line that was shortest and longest
+     * @return
+     * @throws Exception
+     */
     public List<StringBuilder> getLineage()
             throws Exception{
         return lineageServices.getLineage();
     }
 
+    /**
+     * Print all family members and their age in sorted order
+     * @param sortOrder
+     * @return
+     * @throws Exception
+     */
     public List<StringBuilder> printByAge(String sortOrder) throws Exception {
         List<Node> allNodes = lineageServices.getAllSortedNodes(sortOrder);
         List<StringBuilder> returnList = new ArrayList<>();
@@ -72,6 +92,11 @@ public class DataLoadingService {
         return returnList;
     }
 
+    /**
+     * Find the range of period this lineage was active
+     * @return
+     * @throws Exception
+     */
     public String getLineageRange() throws Exception {
         List<Node> allNodes = lineageServices.getAllGraphNodes();
         if(allNodes == null || allNodes.isEmpty()) {
@@ -85,6 +110,11 @@ public class DataLoadingService {
         return result.toString();
     }
 
+    /**
+     * Find mean age for this lineage
+     * @return
+     * @throws Exception
+     */
     public String getMeanAge() throws Exception {
         List<Node> allNodes = lineageServices.getAllGraphNodes();
         if(allNodes == null || allNodes.isEmpty()) {
@@ -97,10 +127,20 @@ public class DataLoadingService {
         return result.toString();
     }
 
+    /**
+     * Find the median age for this lineage
+     * @return
+     * @throws Exception
+     */
     public String getMedianAge() throws Exception {
         return "Median age is: " + lineageServices.getMedianAge();
     }
 
+    /**
+     * Group and print middle 50% of members (name and age) of this lineage using IQR (Interquartile Range)
+     * @return
+     * @throws Exception
+     */
     public List<StringBuilder> getInterQuartileAge() throws Exception {
         Integer[] quartileIndexes = lineageServices.getInterquartileRange();
         List<Node> allNodes = lineageServices.getAllGraphNodes();
@@ -116,6 +156,11 @@ public class DataLoadingService {
         return returnList;
     }
 
+    /**
+     * Who lived longest (name and age) in this lineage?  Who died the youngest (name and age)?
+     * @return
+     * @throws Exception
+     */
     public List<StringBuilder> getLongestAndShortestLiving() throws Exception {
         List<StringBuilder> resultList = new ArrayList<>();
         StringBuilder longestLiving = new StringBuilder();

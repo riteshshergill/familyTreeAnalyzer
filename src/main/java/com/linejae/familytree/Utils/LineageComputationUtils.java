@@ -46,6 +46,11 @@ public class LineageComputationUtils {
         }));
     }
 
+    /**
+     * Validate that a member has all the required attributes
+     * @param member
+     * @throws Exception
+     */
     public static void validateMember(Member member) throws Exception {
         if(member.getName() == null || member.getBirthYear() == null || member.getDeathYear() == null
                 || StringUtils.isEmpty(member.getName()) || StringUtils.isEmpty(member.getBirthYear())

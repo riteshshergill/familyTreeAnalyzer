@@ -16,6 +16,10 @@ public class DataGenerationController {
     @Autowired
     private BatchProcessingService batchProcessingService;
 
+    /**
+     * Generate lineage data automatically
+     * @throws Exception
+     */
     @GetMapping("/familyTree/generateData")
     public void generateReports() throws Exception {
         List<Root> allData = FileUtils.loadAllFiles();

@@ -73,6 +73,9 @@ public class DataLoaderController {
 
     }
 
+    /**
+     * Generate random lineage data
+     */
     @GetMapping("/generateMockData")
     public void generateMockData() {
         try {

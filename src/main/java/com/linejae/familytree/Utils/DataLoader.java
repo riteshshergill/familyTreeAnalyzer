@@ -13,6 +13,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DataLoader {
 
+    /**
+     * Load all data for a lineage for further processing
+     * @param lineageData
+     * @return The processed lineage data stored in CacheManagerService object
+     * @throws Exception
+     */
     public CacheManagerService loadData(Root lineageData) throws Exception {
         CacheManagerService dataManager = new CacheManagerService();
         dataManager.setGraph(new GraphUtil());
@@ -25,6 +31,7 @@ public class DataLoader {
             if(lineageData.getLineage().getMembers() == null) {
                 throw new Exception("Family tree must have members!");
             }
+            //the root node will just contain the family tree name
             Node startingNode = new Node(lineageData.getLineage().getFamilyTree(), lineageData.getLineage().getFamilyTree());
 
             //add the root to the graph first then send its children for addition
@@ -49,12 +56,25 @@ public class DataLoader {
         return dataManager;
     }
 
+    /**
+     * Print individual family lines and mark the family line that was shortest and longest
+     * @param cacheManagerService
+     * @return get the lineage from parent to leaf child
+     * @throws Exception
+     */
     public List<StringBuilder> getLineage(CacheManagerService cacheManagerService)
             throws Exception{
         LineageServices lineageServices = new LineageServices(cacheManagerService);
         return lineageServices.getLineage();
     }
 
+    /**
+     * Print all family members and their age in sorted order
+     * @param sortOrder
+     * @param cacheManagerService
+     * @return all family numbers and their ages
+     * @throws Exception
+     */
     public List<StringBuilder> printByAge(String sortOrder, CacheManagerService cacheManagerService) throws Exception {
         LineageServices lineageServices = new LineageServices(cacheManagerService);
         List<Node> allNodes = lineageServices.getAllSortedNodes(sortOrder);
@@ -67,6 +87,12 @@ public class DataLoader {
         return returnList;
     }
 
+    /**
+     * Find the range of period this lineage was active
+     * @param cacheManagerService
+     * @return active range
+     * @throws Exception
+     */
     public String getLineageRange(CacheManagerService cacheManagerService) throws Exception {
         LineageServices lineageServices = new LineageServices(cacheManagerService);
         List<Node> allNodes = lineageServices.getAllGraphNodes();
@@ -81,6 +107,12 @@ public class DataLoader {
         return result.toString();
     }
 
+    /**
+     * Find mean age for this lineage
+     * @param cacheManagerService
+     * @return The mean age
+     * @throws Exception
+     */
     public String getMeanAge(CacheManagerService cacheManagerService) throws Exception {
         LineageServices lineageServices = new LineageServices(cacheManagerService);
         List<Node> allNodes = lineageServices.getAllGraphNodes();
@@ -94,11 +126,23 @@ public class DataLoader {
         return result.toString();
     }
 
+    /**
+     * Find the median age for this lineage
+     * @param cacheManagerService
+     * @return The median age
+     * @throws Exception
+     */
     public String getMedianAge(CacheManagerService cacheManagerService) throws Exception {
         LineageServices lineageServices = new LineageServices(cacheManagerService);
         return "Median age is: " + lineageServices.getMedianAge();
     }
 
+    /**
+     * Group and print middle 50% of members (name and age) of this lineage using IQR (Interquartile Range)
+     * @param cacheManagerService
+     * @return The interquartile range members
+     * @throws Exception
+     */
     public List<StringBuilder> getInterQuartileAge(CacheManagerService cacheManagerService) throws Exception {
         LineageServices lineageServices = new LineageServices(cacheManagerService);
         Integer[] quartileIndexes = lineageServices.getInterquartileRange();
@@ -115,6 +159,12 @@ public class DataLoader {
         return returnList;
     }
 
+    /**
+     * Who lived longest (name and age) in this lineage?  Who died the youngest (name and age)?
+     * @param dataManager
+     * @return Return longest and shortest living persons
+     * @throws Exception
+     */
     public List<StringBuilder> getLongestAndShortestLiving(CacheManagerService dataManager) throws Exception {
         List<StringBuilder> resultList = new ArrayList<>();
         StringBuilder longestLiving = new StringBuilder();

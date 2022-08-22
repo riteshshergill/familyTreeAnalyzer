@@ -13,9 +13,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * Service to generate reports for multiple files
+ */
 @Service
 public class BatchProcessingService {
 
+    /**
+     * Multithreaded batch process to process several files at once
+     * @param allData All the lineage data to process in parallel
+     * @throws Exception
+     */
     public void processData(List<Root> allData) throws Exception {
         List<Tasklet> allTasks = new ArrayList<>();
         for(Root data: allData) {
@@ -23,6 +31,7 @@ public class BatchProcessingService {
             tasklet.setFamilyTreeData(data);
             allTasks.add(tasklet);
         }
+        //create a fixed thread pool of the same size as the number of lineages
         ExecutorService executor = Executors.newFixedThreadPool(allData.size());
         List<Future<Report>> results = executor.invokeAll(allTasks);
         for(Future<Report> resultData : results) {

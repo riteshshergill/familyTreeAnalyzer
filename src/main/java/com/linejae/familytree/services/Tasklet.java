@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+/**
+ * Callable tasklet to process a lineage record
+ */
 public class Tasklet implements Callable<Report> {
     Root familyTreeData;
 
@@ -20,6 +23,7 @@ public class Tasklet implements Callable<Report> {
         }
         Report reportObject = new Report();
         try {
+            //stateless Dataloader instance
             DataLoader dataLoadingService = new DataLoader();
             CacheManagerService cacheManagerService = dataLoadingService.loadData(familyTreeData);
             reportObject.setFamilyTreeName(familyTreeData.getLineage().getFamilyTree());
