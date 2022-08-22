@@ -20,6 +20,14 @@ public class LineageServices {
     @Autowired
     private CacheManagerService cacheManagerService;
 
+    public LineageServices() {
+
+    }
+
+    public LineageServices(CacheManagerService cacheManagerService) {
+        this.cacheManagerService = cacheManagerService;
+    }
+
     /**
      * Method to compute the family treelineage
      * @return The resulting lineage

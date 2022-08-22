@@ -38,7 +38,7 @@ public class DataLoaderController {
     public Root loadFamilyTreeData(@PathVariable String fileName) throws Exception {
         FileUtils fUtils = new FileUtils();
         Root lineageData = fUtils.loadJsonFile(fileName);
-
+        cacheManagerService.setGraph(new GraphUtil());
         //caching all relationships in the graph cache
         if(lineageData.getLineage() != null) {
             if(lineageData.getLineage().getFamilyTree() == null

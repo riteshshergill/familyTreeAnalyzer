@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MockDataGeneratorUtil {
 
@@ -20,18 +21,14 @@ public class MockDataGeneratorUtil {
 
         for(int i = 0; i < 5; i++) {
             familyTreeNamesList.add("Family Tree for family " + i);
-        }
-
-        for(int i = 0; i < 5; i++) {
-            familyTreeNamesList.add("Family Tree for family " + i);
             Root root = new Root();
             Lineage lineage = new Lineage();
             lineage.setFamilyTree(familyTreeNamesList.get(i));
             lineage.setMembers(generateInitialMembers());
             root.setLineage(lineage);
 
-            Integer maxMembersCount = 0;
-            generateMemberHierarchy(lineage.getMembers(), 1, 4, maxMembersCount);
+            final AtomicInteger maxMembersCount = new AtomicInteger(0);
+            generateMemberHierarchy(lineage.getMembers(), maxMembersCount);
             System.out.println(new ObjectMapper().writeValueAsString(root));
             FileUtils.writeRandomFile(root, "file"+i+".json");
         }
@@ -40,18 +37,23 @@ public class MockDataGeneratorUtil {
 
     }
 
-    private static void generateMemberHierarchy(List<Member> membersList, int minMemberLevel, int maxMemberLevel, Integer maxMembersCount) {
-        maxMembersCount++;
-        if(maxMembersCount > 1) {
+    private static void generateMemberHierarchy(List<Member> membersList, AtomicInteger maxMembersCount) {
+        maxMembersCount.set(maxMembersCount.get() + 1);
+        if(maxMembersCount.get() > 20) {
             return;
         }
-        int min = minMemberLevel;
-        int max = maxMemberLevel;
-        int randomLevelsToGenerate = (int) (Math.random()*(max-min+1)+min);
         membersList.forEach(member -> {
             try {
-                member.setMembers(generateRandomMembers());
-                generateMemberHierarchy(member.getMembers(), 1, randomLevelsToGenerate, 1);
+                int min = 1;
+                int max = 6;
+                int randomLevelsToGenerate = (int) (Math.random()*(max-min+1)+min);
+                System.out.println("level generation count: " + randomLevelsToGenerate);
+                if(randomLevelsToGenerate == 1 || randomLevelsToGenerate == 3
+                        || randomLevelsToGenerate == 5) {
+                    member.setMembers(generateRandomMembers());
+                    generateMemberHierarchy(member.getMembers(), maxMembersCount);
+                }
+
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }

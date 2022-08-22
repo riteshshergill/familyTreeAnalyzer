@@ -1,14 +1,22 @@
 package com.linejae.familytree.Utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.linejae.familytree.models.Report;
 import com.linejae.familytree.models.Root;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility class for file operations
  */
 public class FileUtils {
+
+    public static void generateReport(Report report) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(new File("C:/temp/familytreedata/" + report.getFamilyTreeName() + ".json"), report);
+    }
 
     /**
      * Method to laod the json data from the given file
@@ -25,5 +33,20 @@ public class FileUtils {
     public static void writeRandomFile(Root root, String fileName) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(new File("src/main/resources/" + fileName), root);
+    }
+
+    public static List<Root> loadAllFiles() throws Exception {
+        File file = new File("src/main/resources");
+        ObjectMapper mapper = new ObjectMapper();
+        List<Root> allDataList = new ArrayList<>();
+        String[] pathNames = file.list();
+        for(String path: pathNames) {
+            if(path.contains("json")) {
+                Root familyTreeData = mapper.readValue(new File("src/main/resources/" + path), Root.class);
+                allDataList.add(familyTreeData);
+            }
+
+        }
+        return allDataList;
     }
 }

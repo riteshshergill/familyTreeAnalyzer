@@ -12,7 +12,7 @@ import java.util.List;
 @Scope("singleton")
 public class CacheManagerService {
 
-    private GraphUtil graphUtil = new GraphUtil();
+    private GraphUtil graphUtil;
 
     private Node rootNode;
 
@@ -28,6 +28,10 @@ public class CacheManagerService {
 
     public GraphUtil getGraph() {
         return this.graphUtil;
+    }
+
+    public void setGraph(GraphUtil graphUtil) {
+        this.graphUtil = graphUtil;
     }
 
     public void setRootNode(Node rootNode) {
