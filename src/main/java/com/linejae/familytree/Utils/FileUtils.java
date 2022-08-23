@@ -20,7 +20,7 @@ public class FileUtils {
      */
     public static void generateReport(Report report) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(new File("C:/temp/familytreedata/" + report.getFamilyTreeName() + ".json"), report);
+        mapper.writeValue(new File("src/main/resources/" + report.getFamilyTreeName() + ".json"), report);
     }
 
     /**
@@ -29,9 +29,21 @@ public class FileUtils {
      * @return Root of the btree
      * @throws Exception
      */
-    public Root loadJsonFile(String fileName) throws Exception {
+    public static Root loadJsonFile(String fileName) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         Root familyTreeData = mapper.readValue(new File("src/main/resources/" + fileName), Root.class);
+        return familyTreeData;
+    }
+
+    /**
+     * Load a generated reports file
+     * @param fileName
+     * @return The report of the lineage
+     * @throws Exception
+     */
+    public static Report loadReportFile(String fileName) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        Report familyTreeData = mapper.readValue(new File("src/main/resources/" + fileName), Report.class);
         return familyTreeData;
     }
 

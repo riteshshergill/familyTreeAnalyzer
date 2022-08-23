@@ -33,14 +33,14 @@ public class LineageServices {
      * @return The resulting lineage
      */
     public List<StringBuilder> getLineage() throws Exception {
-        List<Node> leafNodes = cacheManagerService.getLeafNodes();
-        if(leafNodes == null || leafNodes.size() == 0) {
+        List<Node> allNodes = getAllSortedNodes("ASC");
+        if(allNodes == null || allNodes.size() == 0) {
             throw new Exception("Tree doesn't have leaves cant evaluate Lineage");
         }
         final List<LinkedList<String>> antecedants = new ArrayList<>();
-        final AtomicInteger longest = new AtomicInteger(0);
-        final AtomicInteger shortest = new AtomicInteger(cacheManagerService.getDepth() + 4);
-        leafNodes.stream().forEach((leaf) -> antecedants.add(TreeUtils.findParents(leaf, longest, shortest)));
+        AtomicInteger longest = new AtomicInteger(0);
+        AtomicInteger shortest = new AtomicInteger(cacheManagerService.getDepth() + 4);
+        allNodes.stream().forEach((node) -> antecedants.add(TreeUtils.findParents(node, longest, shortest)));
         List<StringBuilder> finalLineages = new ArrayList<>();
         LineageComputationUtils.constructLineageResult(antecedants, finalLineages, longest, shortest);
         return finalLineages;

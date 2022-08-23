@@ -24,7 +24,7 @@ public class BatchProcessingService {
      * @param allData All the lineage data to process in parallel
      * @throws Exception
      */
-    public void processData(List<Root> allData) throws Exception {
+    public void processData(List<Root> allData, Integer threadPoolSize) throws Exception {
         List<Tasklet> allTasks = new ArrayList<>();
         for(Root data: allData) {
             Tasklet tasklet = new Tasklet();
@@ -32,7 +32,7 @@ public class BatchProcessingService {
             allTasks.add(tasklet);
         }
         //create a fixed thread pool of the same size as the number of lineages
-        ExecutorService executor = Executors.newFixedThreadPool(allData.size());
+        ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
         List<Future<Report>> results = executor.invokeAll(allTasks);
         for(Future<Report> resultData : results) {
             Report report = resultData.get();

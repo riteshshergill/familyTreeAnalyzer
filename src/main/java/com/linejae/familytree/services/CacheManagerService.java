@@ -2,11 +2,14 @@ package com.linejae.familytree.services;
 
 import com.gcache.graph.GraphUtil;
 import com.gcache.graph.model.Node;
+import com.linejae.familytree.models.Report;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Store data like a cache to be passed around between services
@@ -16,6 +19,8 @@ import java.util.List;
 public class CacheManagerService {
 
     private GraphUtil graphUtil;
+
+    Map<String, Report> multiLineageMap = new HashMap<>();
 
     private Node rootNode;
 
@@ -83,5 +88,13 @@ public class CacheManagerService {
 
     public void setShortestLiving(Node shortestLiving) {
         this.shortestLiving = shortestLiving;
+    }
+
+    public Map<String, Report> getMultiLineageMap() {
+        return multiLineageMap;
+    }
+
+    public void setMultiLineageMap(Map<String, Report> multiLineageMap) {
+        this.multiLineageMap = multiLineageMap;
     }
 }

@@ -19,11 +19,11 @@ public class MockDataGeneratorUtil {
      * Generate a randomly generated lineage
      * @throws Exception
      */
-    public static void generateMockData() throws Exception {
+    public static void generateMockData(Integer numFiles) throws Exception {
 
         List<String> familyTreeNamesList = new ArrayList<>(20);
 
-        for(int i = 0; i < 5; i++) {
+        for(int i = 0; i < numFiles.intValue(); i++) {
             familyTreeNamesList.add("Family Tree for family " + i);
             Root root = new Root();
             Lineage lineage = new Lineage();
@@ -36,9 +36,6 @@ public class MockDataGeneratorUtil {
             System.out.println(new ObjectMapper().writeValueAsString(root));
             FileUtils.writeRandomFile(root, "file"+i+".json");
         }
-
-
-
     }
 
     /**

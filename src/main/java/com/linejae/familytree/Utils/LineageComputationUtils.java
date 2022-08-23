@@ -1,9 +1,13 @@
 package com.linejae.familytree.Utils;
 
+import com.gcache.graph.GraphUtil;
 import com.gcache.graph.model.Node;
 import com.linejae.familytree.models.Member;
+import com.linejae.familytree.models.Root;
+import com.linejae.familytree.services.CacheManagerService;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,30 +25,33 @@ public class LineageComputationUtils {
      * @param shortest Shortest lineage
      */
     public static void constructLineageResult(List<LinkedList<String>> antecedants, List<StringBuilder> finalLineages, AtomicInteger longest, AtomicInteger shortest) {
-        antecedants.stream().forEach((antecedantList -> {
-            StringBuilder lineage = new StringBuilder();
-            final StringBuilder longAppendString = new StringBuilder();
-            final StringBuilder shortAppendString = new StringBuilder();
 
-            if(antecedantList.size() == longest.get()) {
-                longAppendString.append("Longest");
-            }
-            if(antecedantList.size() == shortest.get()) {
-                shortAppendString.append("Shortest");
-            }
+        StringBuilder longAppendString = new StringBuilder();
+
+        StringBuilder shortAppendString = new StringBuilder();
+
+        antecedants.forEach((antecedantList -> {
+            StringBuilder lineage = new StringBuilder();
             antecedantList.stream().forEach(nodeValue -> {
                 lineage.append(nodeValue + "<-");
             });
-            if(!longAppendString.isEmpty()) {
-                lineage.append("---" + longAppendString);
-                longAppendString.delete(0, longAppendString.length());
+
+            if(antecedantList.size() == longest.get() && longAppendString.isEmpty()) {
+                longAppendString.append("##### Longest");
+                lineage.append(longAppendString);
             }
-            if(!shortAppendString.isEmpty()) {
-                lineage.append("---" + shortAppendString);
-                shortAppendString.delete(0, longAppendString.length());
+            if(antecedantList.size() == shortest.get() && shortAppendString.isEmpty()) {
+                shortAppendString.append("##### Shortest");
+                lineage.append(shortAppendString);
             }
+
+            if(lineage.substring(lineage.length() - 2, lineage.length()).equals("<-")) {
+                lineage.replace(lineage.length() - 2, lineage.length(), "");
+            }
+
             finalLineages.add(lineage);
         }));
+
     }
 
     /**
@@ -70,6 +77,78 @@ public class LineageComputationUtils {
             throw new Exception("Birth year must come before Death year");
         }
 
+    }
+
+    public static Root loadData(String fileName, CacheManagerService cacheManagerService) throws Exception {
+        Root lineageData = FileUtils.loadJsonFile(fileName);
+        cacheManagerService.setGraph(new GraphUtil());
+        //caching all relationships in the graph cache
+        if(lineageData.getLineage() != null) {
+            if(lineageData.getLineage().getFamilyTree() == null
+                    || StringUtils.isEmpty(lineageData.getLineage().getFamilyTree())) {
+                throw new Exception("Family tree name must be present!");
+            }
+            if(lineageData.getLineage().getMembers() == null) {
+                throw new Exception("Family tree must have members!");
+            }
+            Node startingNode = new Node(lineageData.getLineage().getFamilyTree(), lineageData.getLineage().getFamilyTree());
+
+            //add the root to the graph first then send its children for addition
+            //recursively
+            for(Member rootchildren: lineageData.getLineage().getMembers()) {
+                try {
+                    LineageComputationUtils.validateMember(rootchildren);
+                } catch (Exception e) {
+                    System.out.println("Invalid member found, skipping..");
+                    continue;
+                }
+                Node rootchild = new Node(rootchildren.toString(), rootchildren);
+                cacheManagerService.getGraph().addRelationship(startingNode, rootchild);
+            }
+            cacheManagerService.setRootNode(startingNode);
+            //Add the depth for the tree even as we construct it
+            cacheManagerService.setDepth(cacheManagerService.getDepth() + 1);
+            //send the children to be added to the graph recursively
+            cacheChildren(lineageData.getLineage().getMembers(), cacheManagerService.getGraph(), startingNode, cacheManagerService);
+
+        }
+        return lineageData;
+    }
+
+    //this method will add all the nodes to a JGrapht directed graph
+    private static void cacheChildren(ArrayList<Member> members, GraphUtil graphUtil, Node parent, CacheManagerService cacheManagerService) {
+        if(members == null) {
+            return;
+        }
+        members.forEach((memberObject -> {
+
+            try {
+                LineageComputationUtils.validateMember(memberObject);
+            } catch (Exception e) {
+                System.out.println("Invalid member found, skipping..");
+                return;
+            }
+
+            if(memberObject.getMembers() != null) {
+                cacheManagerService.setDepth(cacheManagerService.getDepth() + 1);
+                for(Member memberChild: memberObject.getMembers()) {
+                    try {
+                        LineageComputationUtils.validateMember(memberChild);
+                    } catch (Exception e) {
+                        System.out.println("Invalid member found, skipping..");
+                        continue;
+                    }
+                    Node parentNode = new Node(memberObject.toString(), memberObject, parent);
+                    Node memberNode = new Node(memberChild.toString(), memberChild, parentNode);
+                    graphUtil.addRelationship(parentNode, memberNode);
+                    cacheChildren(memberChild.getMembers(), graphUtil, memberNode, cacheManagerService);
+                }
+            } else {
+                Node leafNode = new Node(memberObject.toString(), memberObject, parent);
+                graphUtil.addRelationship(leafNode, null);
+                cacheManagerService.getLeafNodes().add(leafNode);
+            }
+        }));
     }
 
     //utility methods to parse the year data and calculate age

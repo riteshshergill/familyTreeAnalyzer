@@ -5,6 +5,7 @@ import com.linejae.familytree.models.Root;
 import com.linejae.familytree.services.BatchProcessingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -20,9 +21,9 @@ public class DataGenerationController {
      * Generate lineage data automatically
      * @throws Exception
      */
-    @GetMapping("/familyTree/generateData")
-    public void generateReports() throws Exception {
+    @GetMapping("/familyTree/generateData/{threadPoolSize}")
+    public void generateReports(@PathVariable Integer threadPoolSize) throws Exception {
         List<Root> allData = FileUtils.loadAllFiles();
-        batchProcessingService.processData(allData);
+        batchProcessingService.processData(allData, threadPoolSize);
     }
 }

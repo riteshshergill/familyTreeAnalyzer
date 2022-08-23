@@ -34,6 +34,12 @@ public class FamilyTreeEvaluationController {
         return lineageServices.getLineage();
     }
 
+    @GetMapping("/familyTree/findLongestShortest/{familyTreeName}")
+    public List<StringBuilder> getLineage(@PathVariable String familyTreeName)
+            throws Exception{
+        return cacheManagerService.getMultiLineageMap().get(familyTreeName).getLineage();
+    }
+
     @GetMapping("/familyTree/printSorted/{sortOrder}")
     public List<StringBuilder> printByAge(@PathVariable String sortOrder) throws Exception {
         List<Node> allNodes = lineageServices.getAllSortedNodes(sortOrder);
@@ -44,6 +50,11 @@ public class FamilyTreeEvaluationController {
             returnList.add(ageWiseMember);
         }
         return returnList;
+    }
+
+    @GetMapping("/familyTree/printSorted/{familyTreeName}/{sortOrder}")
+    public List<StringBuilder> printByAge(@PathVariable String familyTreeName, @PathVariable String sortOrder) throws Exception {
+        return cacheManagerService.getMultiLineageMap().get(familyTreeName).getAgeList();
     }
 
     @GetMapping("/familyTree/lineageRange")
@@ -60,6 +71,11 @@ public class FamilyTreeEvaluationController {
         return result.toString();
     }
 
+    @GetMapping("/familyTree/lineageRange/{familyTreeName}")
+    public String getLineageRange(@PathVariable String familyTreeName) throws Exception {
+        return cacheManagerService.getMultiLineageMap().get(familyTreeName).getLineageRange();
+    }
+
     @GetMapping("/familyTree/meanAge")
     public String getMeanAge() throws Exception {
         List<Node> allNodes = lineageServices.getAllGraphNodes();
@@ -73,9 +89,19 @@ public class FamilyTreeEvaluationController {
         return result.toString();
     }
 
+    @GetMapping("/familyTree/meanAge/{familyTreeName}")
+    public String getMeanAge(@PathVariable String familyTreeName) throws Exception {
+        return cacheManagerService.getMultiLineageMap().get(familyTreeName).getMeanAge();
+    }
+
     @GetMapping("/familyTree/getMedianAge")
     public String getMedianAge() throws Exception {
         return "Median age is: " + lineageServices.getMedianAge();
+    }
+
+    @GetMapping("/familyTree/getMedianAge/{familyTreeName}")
+    public String getMedianAge(@PathVariable String familyTreeName) throws Exception {
+        return cacheManagerService.getMultiLineageMap().get(familyTreeName).getMedianAge();
     }
 
     @GetMapping("/familyTree/getInterQuartileAge")
@@ -94,6 +120,11 @@ public class FamilyTreeEvaluationController {
         return returnList;
     }
 
+    @GetMapping("/familyTree/getInterQuartileAge/{familyTreeName}")
+    public List<StringBuilder> getInterQuartileAge(@PathVariable String familyTreeName) throws Exception {
+        return cacheManagerService.getMultiLineageMap().get(familyTreeName).getInterQuartileRange();
+    }
+
     @GetMapping("/familyTree/getLongestShortestLiving")
     public List<StringBuilder> getLongestAndShortestLiving() throws Exception {
         List<StringBuilder> resultList = new ArrayList<>();
@@ -110,6 +141,11 @@ public class FamilyTreeEvaluationController {
         resultList.add(longestLiving);
         resultList.add(shortestLiving);
         return resultList;
+    }
+
+    @GetMapping("/familyTree/getLongestShortestLiving/{familyTreeName}")
+    public List<StringBuilder> getLongestAndShortestLiving(@PathVariable String familyTreeName) throws Exception {
+        return cacheManagerService.getMultiLineageMap().get(familyTreeName).getLongestAndShortestLiving();
     }
 
 
