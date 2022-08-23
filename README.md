@@ -83,3 +83,5 @@ _/familyTree/loadMultiple/{fileNames}_ ---> Load family tree data for multiple f
 Sample --- /familyTree/loadMultiple/file1.json,file2.json,file3.json
 
 Then invoke the reporting endpoints with the specific family tree name
+
+_/familyTree/generateMultiple/{threadPoolSize}/{fileNames}_ ---> Generate reports for multiple filenames specified with a fixed thread pool size as provided in the argument

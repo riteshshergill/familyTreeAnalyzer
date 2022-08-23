@@ -107,7 +107,7 @@ public class FamilyTreeEvaluationController {
     @GetMapping("/familyTree/getInterQuartileAge")
     public List<StringBuilder> getInterQuartileAge() throws Exception {
         Integer[] quartileIndexes = lineageServices.getInterquartileRange();
-        List<Node> allNodes = lineageServices.getAllGraphNodes();
+        List<Node> allNodes = lineageServices.getAllSortedNodes("ASC");
         if(allNodes == null || allNodes.isEmpty()) {
             throw new Exception("Cannot get inter quartile for an empty tree");
         }

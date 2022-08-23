@@ -159,11 +159,11 @@ public class LineageServices {
         Integer interQuartileEndIndex = 0;
 
         if((allNodes.size()-1)%2 == 0) {
-            interQuartileStartIndex = medianIndex/2;
-            interQuartileEndIndex = (allNodes.size() + medianIndex)/2;
+            interQuartileStartIndex = (medianIndex/2);
+            interQuartileEndIndex = (allNodes.size() + medianIndex)/2 - 1;
         } else {
             interQuartileStartIndex = (medianIndex/2) + 1;
-            interQuartileEndIndex = (allNodes.size() + (medianIndex))/2 + 1;
+            interQuartileEndIndex = (allNodes.size() + (medianIndex))/2;
         }
 
         Integer[] quartileIndexes = new Integer[2];

@@ -1,5 +1,7 @@
 package com.gcache.graph.model;
 
+import java.util.Objects;
+
 /**
  * Node object to be stored in JGrapht MultiGraph instance
  */
@@ -61,5 +63,18 @@ public class Node {
 
     public void setParentNode(Node parentNode) {
         this.parentNode = parentNode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Node node = (Node) o;
+        return data.equals(node.data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(data);
     }
 }
